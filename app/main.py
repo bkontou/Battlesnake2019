@@ -266,12 +266,14 @@ def start():
     global M
     global H
     global W
-    M = [[0]*H for w in range(W)]
-    print(M)
+    
     
     data = bottle.request.json
         
     H, W = data["board"]["height"], data["board"]["height"]
+    
+    M = [[0]*H for w in range(W)]
+    print(M)
     
     
     global state
