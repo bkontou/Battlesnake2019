@@ -388,7 +388,10 @@ def move():
     my_snake_body = to_loc_list(data["you"]["body"])
 
     snake_head = my_snake_body[0]
-    snake_head_direction = my_snake_body[0] - my_snake_body[1]
+    if len(my_snake_body) > 1:
+        snake_head_direction = my_snake_body[0] - my_snake_body[1]
+    else:
+        snake_head_direction = Loc(0,1)
     
     food = to_loc_list(data["board"]["food"])
     
