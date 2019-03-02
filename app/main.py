@@ -332,7 +332,7 @@ def move():
     #update map with snakes
     for i in range(H):
         for j in range(W):
-            M[i][j] = 0
+            M[j][i] = 0
     
     for s in snakelist:
         M[s.x][s.y] = 1
