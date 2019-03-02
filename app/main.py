@@ -294,135 +294,139 @@ def start():
 @bottle.post('/move')
 def move():
     data = bottle.request.json
-    global state
-    global snakesizeinit
-    global dirs
-    global M
-    global H
-    global W
-    
-    """
-    TODO: Using the data from the endpoint request object, your
-            snake AI must choose a direction to move in.
-    """
-        
-    my_snake_body = to_loc_list(data["you"]["body"])
-
-    snake_head = my_snake_body[0]
-    
-    food = to_loc_list(data["board"]["food"])
-
-    #find closest food to head
-    m = 5000 
-    closest = Loc(0,0)
-    for i,f in enumerate(food):
-        if (f-snake_head).dist() < m:
-            m = (f-snake_head).dist()
-            closest = f
-    
-    
-    #compile all snakes into 1 list
-    snakelist = []
-    for snake in data["board"]["snakes"]:
-        snakelist += snake["body"]
-    
-    snakelist = to_loc_list(snakelist)
-    snakelist.remove(my_snake_body[len(my_snake_body)-1])
-
-    #print("updating map")
-    #update map with snakes
-    for i in range(H):
-        for j in range(W):
-            M[i][j] = 0
-    
-    for s in snakelist:
-        M[s.x][s.y] = 1
-    
-    #build tree over map. tree head is snake head
-    T_H = build_tree(M, snake_head)
-        
-    #idea: if snake gets to a cross road, break map into two and sum 1s in
-    #each side to see which side it should take: pro tip: take the lower sum side
-    if state == 'feed':
-        path = BFS(T_H,closest)
-        
-        if path == None:
-            for i,f in enumerate(food):
-                path = BFS(T_H,f)
-                if path != None:
-                    break
-        if path == None:
-            for i in range(H):
-                for j in range(W):
-                    M[i][j] = 0
-            for s in snakelist:
-                M[s.x][s.y] = 1
-            
-            path = BFS(T_H,closest)
-        
-        if path == None or len(my_snake_body) >= snakesizeinit+2:
-            state = 'chase'
-    
-    elif state == 'chase':
-        print("chasing tail")
-        path = BFS(T_H, my_snake_body[len(my_snake_body)-1])
-        
-        if data["you"]["health"] < 40:
-            snakesizeinit = len(my_snake_body)
-            state = 'feed'
-    
-
-    
+# =============================================================================
+#     global state
+#     global snakesizeinit
+#     global dirs
+#     global M
+#     global H
+#     global W
+#     
+#     """
+#     TODO: Using the data from the endpoint request object, your
+#             snake AI must choose a direction to move in.
+#     """
+#         
+#     my_snake_body = to_loc_list(data["you"]["body"])
+# 
+#     snake_head = my_snake_body[0]
+#     
+#     food = to_loc_list(data["board"]["food"])
+# 
+#     #find closest food to head
+#     m = 5000 
+#     closest = Loc(0,0)
+#     for i,f in enumerate(food):
+#         if (f-snake_head).dist() < m:
+#             m = (f-snake_head).dist()
+#             closest = f
+#     
+#     
+#     #compile all snakes into 1 list
+#     snakelist = []
+#     for snake in data["board"]["snakes"]:
+#         snakelist += snake["body"]
+#     
+#     snakelist = to_loc_list(snakelist)
+#     snakelist.remove(my_snake_body[len(my_snake_body)-1])
+# 
+#     #print("updating map")
+#     #update map with snakes
+#     for i in range(H):
+#         for j in range(W):
+#             M[i][j] = 0
+#     
+#     for s in snakelist:
+#         M[s.x][s.y] = 1
+#     
+#     #build tree over map. tree head is snake head
+#     T_H = build_tree(M, snake_head)
+#         
+#     #idea: if snake gets to a cross road, break map into two and sum 1s in
+#     #each side to see which side it should take: pro tip: take the lower sum side
+#     if state == 'feed':
+#         path = BFS(T_H,closest)
+#         
+#         if path == None:
+#             for i,f in enumerate(food):
+#                 path = BFS(T_H,f)
+#                 if path != None:
+#                     break
+#         if path == None:
+#             for i in range(H):
+#                 for j in range(W):
+#                     M[i][j] = 0
+#             for s in snakelist:
+#                 M[s.x][s.y] = 1
+#             
+#             path = BFS(T_H,closest)
+#         
+#         if path == None or len(my_snake_body) >= snakesizeinit+2:
+#             state = 'chase'
+#     
+#     elif state == 'chase':
+#         print("chasing tail")
+#         path = BFS(T_H, my_snake_body[len(my_snake_body)-1])
+#         
+#         if data["you"]["health"] < 40:
+#             snakesizeinit = len(my_snake_body)
+#             state = 'feed'
+#     
+# 
+#     
+# =============================================================================
     direction = 'down'
-    
-    if path == None:
-        #This shit is fucked!!! Need to rewrite!
-        print("cant find path!!!!")
-        d = my_snake_body[1] - my_snake_body[0]
-        
-        p_next = snake_head + d
-        
-        if p_next.x >= W-1 or p_next.x <= 0 or p_next.y >= H-1 or p_next.y <= 0:
-            n = 0
-            #print("gunna hit a wall")
-            if p_next in my_snake_body:
-                pass
-                #print("OH NO")
-            
-            
-        else:
-            n = 0
-            while p_next not in snakelist:
-                p_next = snake_head + dirs[n]
-                n+=1
-        
-        d = p_next - snake_head
-        
-        if d == dirs[0]:
-            direction = 'up'
-        if d == dirs[1]:
-            direction = 'right'
-        if d == dirs[2]:
-            direction = 'down'
-        if d == dirs[3]:
-            direction = 'left'
-                
-    else:
-        #Follow the first direction of the path you got from the BFS
-        d = path[len(path)-2] - path[len(path)-1]
-        print("direction:")
-        print(d)
-        
-        if d.y > 0:
-            direction = 'down'
-        elif d.y < 0:
-            direction = 'up'
-        elif d.x > 0:
-            direction = 'right'
-        elif d.x < 0:
-            direction = 'left'
-
-
+# =============================================================================
+#     
+#     if path == None:
+#         #This shit is fucked!!! Need to rewrite!
+#         print("cant find path!!!!")
+#         d = my_snake_body[1] - my_snake_body[0]
+#         
+#         p_next = snake_head + d
+#         
+#         if p_next.x >= W-1 or p_next.x <= 0 or p_next.y >= H-1 or p_next.y <= 0:
+#             n = 0
+#             #print("gunna hit a wall")
+#             if p_next in my_snake_body:
+#                 pass
+#                 #print("OH NO")
+#             
+#             
+#         else:
+#             n = 0
+#             while p_next not in snakelist:
+#                 p_next = snake_head + dirs[n]
+#                 n+=1
+#         
+#         d = p_next - snake_head
+#         
+#         if d == dirs[0]:
+#             direction = 'up'
+#         if d == dirs[1]:
+#             direction = 'right'
+#         if d == dirs[2]:
+#             direction = 'down'
+#         if d == dirs[3]:
+#             direction = 'left'
+#                 
+#     else:
+#         #Follow the first direction of the path you got from the BFS
+#         d = path[len(path)-2] - path[len(path)-1]
+#         print("direction:")
+#         print(d)
+#         
+#         if d.y > 0:
+#             direction = 'down'
+#         elif d.y < 0:
+#             direction = 'up'
+#         elif d.x > 0:
+#             direction = 'right'
+#         elif d.x < 0:
+#             direction = 'left'
+# 
+# 
+# =============================================================================
     return move_response(direction)
 
 
