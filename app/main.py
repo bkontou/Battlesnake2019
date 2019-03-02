@@ -218,16 +218,18 @@ def to_loc_list(locs):
     
     
     
-#       up        right    down     left
-dirs = [Loc(-1,0),Loc(0,1),Loc(1,0),Loc(0,-1)]
-global M
-global H
-global W
-M = []
-
-data = bottle.request.json
-    
-H, W = data["board"]["height"], data["board"]["height"]
+# =============================================================================
+# #       up        right    down     left
+# dirs = [Loc(-1,0),Loc(0,1),Loc(1,0),Loc(0,-1)]
+# global M
+# global H
+# global W
+# M = []
+# 
+# data = bottle.request.json
+#     
+# H, W = data["board"]["height"], data["board"]["height"]
+# =============================================================================
 # =============================================================================
 # 
 # print("initializing")
