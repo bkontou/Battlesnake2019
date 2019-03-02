@@ -266,7 +266,8 @@ def start():
     global M
     global H
     global W
-    M = [[]]
+    M = [[0]*H for w in range(W)]
+    print(M)
     
     data = bottle.request.json
         
