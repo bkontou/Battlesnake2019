@@ -6,7 +6,7 @@ import time
 
 from api import ping_response, start_response, move_response, end_response
 
-from queue import queue
+from queue import queue as Queue
 
 """
 class Queue:
