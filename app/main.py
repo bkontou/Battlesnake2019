@@ -5,6 +5,10 @@ import bottle
 import time
 
 from api import ping_response, start_response, move_response, end_response
+try:
+    import queue
+except ImportError:
+    import Queue as queue
 
 from queue import Queue
 """
