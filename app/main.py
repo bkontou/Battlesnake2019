@@ -5,13 +5,7 @@ import bottle
 import time
 
 from api import ping_response, start_response, move_response, end_response
-try:
-    import queue
-except ImportError:
-    import Queue as queue
 
-from queue import Queue
-"""
 class Queue:
     def __init__(self):
         self.q = []
@@ -29,8 +23,6 @@ class Queue:
             return True
         else:
             return False
-"""
-
 
 class Loc:
     def __init__(self,x,y):
