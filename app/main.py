@@ -7,11 +7,8 @@ import time
 from api import ping_response, start_response, move_response, end_response
 
 from Queue import Queue
-<<<<<<< HEAD
-=======
-import numpy as np
->>>>>>> master
 
+import numpy as np
 """
 class Queue:
     def __init__(self):
@@ -57,6 +54,30 @@ class Loc:
 
     def __eq__(self, L):
         if self.x == L.x and self.y == L.y:
+            return True
+        else:
+            return False
+    
+    def __gt__(self,L):
+        if self.dist() > L.dist():
+            return True
+        else:
+            return False
+    
+    def __ls__(self,L):
+        if self.dist() < L.dist():
+            return True
+        else:
+            return False
+    
+    def __gte__(self,L):
+        if self.dist() >= L.dist():
+            return True
+        else:
+            return False
+    
+    def __lse__(self,L):
+        if self.dist() <= L.dist():
             return True
         else:
             return False
@@ -112,6 +133,50 @@ def BFS(T_H,l):
             Q.put(T.right)
     
     return None
+
+def FloodFill(T_H,direction):
+    if direction == 'up' and T_H.up:
+        return Span(T_H.up)
+    else:
+        return 0
+        
+    if direction == 'down' and T_H.down:
+        return Span(T_H.down)
+    else:
+        return 0
+        
+    if direction == 'left' and T_H.left:
+        return Span(T_H.left)
+    else:
+        return 0
+        
+    if direction == 'ritght' and T_H.right:
+        return Span(T_H.right)
+    else:
+        return 0
+        
+
+def Span(T_H):
+    Q = Queue()
+    Q.put(T_H)
+    
+    n = 0
+    
+    
+    while not Q.empty():
+        n += 1
+        T = Q.get()
+        
+        if T.up:
+            Q.put(T.up)
+        if T.down:
+            Q.put(T.down)
+        if T.left:
+            Q.put(T.left)
+        if T.right:
+            Q.put(T.right)
+    
+    return n
 
 def get_path(T):
     path = []
@@ -215,7 +280,8 @@ def build_tree(M,H_L):
             pass
         
     return T_H
-        
+            
+            
     
 def to_loc_list(locs):
     loc_list = []
@@ -281,11 +347,7 @@ def start():
         
     H, W = data["board"]["height"], data["board"]["height"]
     
-    M = [[0]*H for w in range(W)]
-<<<<<<< HEAD
-    print(M)
-=======
->>>>>>> master
+    M = np.zeros((H,W),dtype=int)
     
     
     global state
@@ -323,19 +385,22 @@ def move():
     my_snake_body = to_loc_list(data["you"]["body"])
 
     snake_head = my_snake_body[0]
+    snake_head_direction = my_snake_body[0] - my_snake_body[1]
     
     food = to_loc_list(data["board"]["food"])
     
-    a = np.zeros(40)
-    print(a)
 
     #find closest food to head
-    m = 5000 
-    closest = Loc(0,0)
-    for i,f in enumerate(food):
-        if (f-snake_head).dist() < m:
-            m = (f-snake_head).dist()
-            closest = f
+    fooddists = []
+    for f in food:
+        fooddists.append(f-snake_head)
+    fooddists = np.sort(fooddists)
+    for i,f in enumerate(fooddists):
+        fooddists[i] = f + snake_head
+
+    
+    
+    
     
     
     #compile all snakes into 1 list
@@ -348,13 +413,12 @@ def move():
 
     #print("updating map")
     #update map with snakes
-    for i in range(H):
-        for j in range(W):
-            M[j][i] = 0
+    M = np.zeros((H,W),dtype=int)
     
-    print(M)
     for s in snakelist:
-        M[s.x][s.y] = 1
+        M[s.x,s.y] = 1
+    for f in food:
+        M[f.x,f.y] = 2
     
     #build tree over map. tree head is snake head
     T_H = build_tree(M, snake_head)
@@ -362,7 +426,42 @@ def move():
     #idea: if snake gets to a cross road, break map into two and sum 1s in
     #each side to see which side it should take: pro tip: take the lower sum side
     if state == 'feed':
-        path = BFS(T_H,closest)
+        print("finding food")
+        
+        #Tree right, tree left
+        T_L = build_tree(M,snake_head+Loc(snake_head_direction.y,-snake_head_direction.x))
+        T_R = build_tree(M,snake_head+Loc(-snake_head_direction.y,snake_head_direction.x))
+        T_L_L = Span(T_L)
+        T_R_L = Span(T_R)
+        
+        if T_L_L < len(my_snake_body):
+            #dont turn left
+        elif T_R_L < len(my_snake_body):
+            #dont turn right
+        path = BFS(T_H,fooddists[0])
+# =============================================================================
+#         for i in range(3):
+#             f = fooddists[i]
+# 
+#             path = BFS(T_H,f)
+#             d = path[len(path)-2] - path[len(path)-1]
+#             
+#             if d == dirs[0]:
+#                 di = 'up'
+#             if d == dirs[1]:
+#                 di = 'right'
+#             if d == dirs[2]:
+#                 di = 'down'
+#             if d == dirs[3]:
+#                 di = 'left'
+#             
+#             l = FloodFill(T_H,di)
+#             if l < len(my_snake_body):
+#                 pass
+#             else:
+#                 break
+# =============================================================================
+            
         
 # =============================================================================
 #         if snake_head.x > H - 2:
@@ -381,7 +480,13 @@ def move():
             for s in snakelist:
                 M[s.x][s.y] = 1
             
-            path = BFS(T_H,closest)
+            path = BFS(T_H,fooddists[0])
+            
+        if snake_head.x > H - 1 or snake_head.x < 1:
+            print("AT EDGE")
+        
+        if snake_head.y > W - 1 or snake_head.y  < 1:
+            print("AT EDGE")
         
         if path == None or len(my_snake_body) >= snakesizeinit+2:
             state = 'chase'
@@ -394,6 +499,8 @@ def move():
         if data["you"]["health"] < 40:
             snakesizeinit = len(my_snake_body)
             state = 'feed'
+        elif path == None:
+            path = BFS(T_H,food[0])
     
 
     
