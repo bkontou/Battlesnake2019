@@ -352,6 +352,8 @@ def start():
     
     global state
     global snakesizeinit
+    global no_food
+    no_food = 0
     snakesizeinit = len(data["you"]["body"])
     state = 'feed'
     
@@ -376,6 +378,7 @@ def move():
     global M
     global H
     global W
+    global no_food
     
     """
     TODO: Using the data from the endpoint request object, your
@@ -434,13 +437,36 @@ def move():
         T_L_L = Span(T_L)
         T_R_L = Span(T_R)
         
+        if T_L_L < len(my_snake_body) and T_R_L < len(my_snake_body):
+            print("must chase tail")
+            state = 'chase'
+            
         if T_L_L < len(my_snake_body):
-            #dont turn left
-            pass
+            #find food in T_R
+            to_find = 0
+            for f in fooddists:
+                path = BFS(T_R,f)
+                if path != None:
+                    to_find = f
+                    break
+            if to_find != 0:
+                path = BFS(T_H,to_find)
+            else:
+                state = 'chase'
         elif T_R_L < len(my_snake_body):
-            #dont turn right
-            pass
-        path = BFS(T_H,fooddists[0])
+            #find food in T_R
+            to_find = 0
+            for f in fooddists:
+                path = BFS(T_L,f)
+                if path != None:
+                    to_find = f
+                    break
+            if to_find != 0:
+                path = BFS(T_H,to_find)
+            else:
+                state = 'chase'
+        else:
+            path = BFS(T_H,fooddists[0])
 # =============================================================================
 #         for i in range(3):
 #             f = fooddists[i]
@@ -492,17 +518,30 @@ def move():
         
         if path == None or len(my_snake_body) >= snakesizeinit+2:
             state = 'chase'
+            if path == None:
+                no_food = 1
             
     
     elif state == 'chase':
         print("chasing tail")
         path = BFS(T_H, my_snake_body[len(my_snake_body)-1])
         
-        if data["you"]["health"] < 40:
+        if data["you"]["health"] < 40 and no_food == 0:
             snakesizeinit = len(my_snake_body)
             state = 'feed'
         elif path == None:
-            path = BFS(T_H,food[0])
+            print("must find food")
+            to_find = 0
+            for f in fooddists:
+                path = BFS(T_H,f)
+                if path != None:
+                    to_find = f
+                    break
+            if to_find != 0:
+                path = BFS(T_H,to_find)
+            else:
+                print("OH NO")
+                
     
 
     
