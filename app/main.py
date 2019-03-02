@@ -6,17 +6,23 @@ import time
 
 from api import ping_response, start_response, move_response, end_response
 
-class Queue:
-    def __init__(self):
-        self.q = []
-    
-    def put(self, obj):
-        self.q.append(obj)
-    
-    def get(self):
-        obj = self.q[len(self.q)-1]
-        self.q.pop(len(self.q)-1)
-        return obj
+from Queue import Queue
+
+# =============================================================================
+# class Queue:
+#     def __init__(self):
+#         self.q = []
+#     
+#     def put(self, obj):
+#         self.q.append(obj)
+#     
+# =============================================================================
+# =============================================================================
+#     def get(self):
+#         obj = self.q[len(q)-1]
+#         self.q.pop(len(q)-1
+#                 )
+# =============================================================================
 
 
 
