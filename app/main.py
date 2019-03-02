@@ -436,8 +436,10 @@ def move():
         
         if T_L_L < len(my_snake_body):
             #dont turn left
+            pass
         elif T_R_L < len(my_snake_body):
             #dont turn right
+            pass
         path = BFS(T_H,fooddists[0])
 # =============================================================================
 #         for i in range(3):
