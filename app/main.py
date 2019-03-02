@@ -379,7 +379,7 @@ def move():
     global H
     global W
     global no_food
-    
+    H, W = data["board"]["height"], data["board"]["height"]
     """
     TODO: Using the data from the endpoint request object, your
             snake AI must choose a direction to move in.
