@@ -342,6 +342,7 @@ def move():
         for j in range(W):
             M[j][i] = 0
     
+    print(M)
     for s in snakelist:
         M[s.x][s.y] = 1
     
