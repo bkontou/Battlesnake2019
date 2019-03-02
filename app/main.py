@@ -6,10 +6,27 @@ import time
 
 from api import ping_response, start_response, move_response, end_response
 
-import queue
+from Queue import Queue
 
+"""
+class Queue:
+    def __init__(self):
+        self.q = []
+    
+    def put(self, obj):
+        self.q.append(obj)
+    
+    def get(self):
+        obj = self.q[len(self.q)-1]
+        self.q.pop(len(self.q)-1)
+        return obj
 
-
+    def empty(self):
+        if len(self.q) == 0:
+            return True
+        else:
+            return False
+"""
 
 class Loc:
     def __init__(self,x,y):
@@ -52,7 +69,7 @@ class Tree:
         
         
 def search_tree(T_H):
-    Q = queue.Queue()
+    Q = Queue()
     Q.put(T_H)
     path = []
     path.append
@@ -70,7 +87,7 @@ def search_tree(T_H):
             Q.put(T.right)
             
 def BFS(T_H,l):
-    Q = queue.Queue()
+    Q = Queue()
     
     Q.put(T_H)
     
@@ -115,7 +132,7 @@ def build_tree(M,H_L):
     right = T_H.cargo.update_y(1)
     loc_list.append(T_H.cargo)
     
-    Q = queue.Queue()
+    Q = Queue()
     
     
     try:
@@ -206,23 +223,16 @@ def to_loc_list(locs):
     
     
     
-#       up        right    down     left
-dirs = [Loc(-1,0),Loc(0,1),Loc(1,0),Loc(0,-1)]
-global M
-global H
-global W
-M = []
 
-data = bottle.request.json
-    
-H, W = data["board"]["height"], data["board"]["height"]
-
-print("initializing")
-for i in range(H):
-    a = []
-    for j in range(W):
-        a.append(0)
-    M.append(a)
+# =============================================================================
+# 
+# print("initializing")
+# for i in range(H):
+#     a = []
+#     for j in range(W):
+#         a.append(0)
+#     M.append(a)
+# =============================================================================
 
 #mysnake = snake([0],1)
 
@@ -255,7 +265,21 @@ def ping():
 def start():
     data = bottle.request.json
     
+    #       up        right    down     left
+    global dirs
+    dirs = [Loc(-1,0),Loc(0,1),Loc(1,0),Loc(0,-1)]
+    global M
+    global H
+    global W
+    
+    
+    data = bottle.request.json
+        
     H, W = data["board"]["height"], data["board"]["height"]
+    
+    M = [[0]*H for w in range(W)]
+    print(M)
+    
     
     global state
     global snakesizeinit
@@ -279,6 +303,11 @@ def move():
     data = bottle.request.json
     global state
     global snakesizeinit
+    global dirs
+    global M
+    global H
+    global W
+    
     """
     TODO: Using the data from the endpoint request object, your
             snake AI must choose a direction to move in.
@@ -311,8 +340,9 @@ def move():
     #update map with snakes
     for i in range(H):
         for j in range(W):
-            M[i][j] = 0
+            M[j][i] = 0
     
+    print(M)
     for s in snakelist:
         M[s.x][s.y] = 1
     
@@ -351,7 +381,7 @@ def move():
     
 
     
-    direction = 'up'
+    direction = 'down'
     
     if path == None:
         #This shit is fucked!!! Need to rewrite!
@@ -412,9 +442,6 @@ def end():
     TODO: If your snake AI was stateful,
         clean up any stateful objects here.
     """
-
-    for m in M:
-        print(m)
 
     return end_response()
 
