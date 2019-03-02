@@ -6,9 +6,6 @@ import time
 
 from api import ping_response, start_response, move_response, end_response
 
-from queue import queue as Queue
-
-"""
 class Queue:
     def __init__(self):
         self.q = []
@@ -20,7 +17,12 @@ class Queue:
         obj = self.q[len(self.q)-1]
         self.q.pop(len(self.q)-1)
         return obj
-"""
+
+    def empty(self):
+        if len(self.q) == 0:
+            return True
+        else:
+            return False
 
 
 
