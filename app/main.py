@@ -266,7 +266,7 @@ def start():
     global M
     global H
     global W
-    M = []
+    M = [[]]
     
     data = bottle.request.json
         
