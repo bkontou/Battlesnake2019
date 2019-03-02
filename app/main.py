@@ -433,6 +433,7 @@ def move():
     #each side to see which side it should take: pro tip: take the lower sum side
     if state == 'feed':
         print("finding food")
+        path = None
         
         #Tree right, tree left
         T_L = build_tree(M,snake_head+Loc(snake_head_direction.y,-snake_head_direction.x))
