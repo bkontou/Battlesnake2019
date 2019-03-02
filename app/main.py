@@ -7,6 +7,10 @@ import time
 from api import ping_response, start_response, move_response, end_response
 
 from Queue import Queue
+<<<<<<< HEAD
+=======
+import numpy as np
+>>>>>>> master
 
 """
 class Queue:
@@ -278,7 +282,10 @@ def start():
     H, W = data["board"]["height"], data["board"]["height"]
     
     M = [[0]*H for w in range(W)]
+<<<<<<< HEAD
     print(M)
+=======
+>>>>>>> master
     
     
     global state
@@ -318,6 +325,9 @@ def move():
     snake_head = my_snake_body[0]
     
     food = to_loc_list(data["board"]["food"])
+    
+    a = np.zeros(40)
+    print(a)
 
     #find closest food to head
     m = 5000 
@@ -354,6 +364,11 @@ def move():
     if state == 'feed':
         path = BFS(T_H,closest)
         
+# =============================================================================
+#         if snake_head.x > H - 2:
+#             
+# =============================================================================
+        
         if path == None:
             for i,f in enumerate(food):
                 path = BFS(T_H,f)
@@ -370,6 +385,7 @@ def move():
         
         if path == None or len(my_snake_body) >= snakesizeinit+2:
             state = 'chase'
+            
     
     elif state == 'chase':
         print("chasing tail")
@@ -418,7 +434,7 @@ def move():
     else:
         #Follow the first direction of the path you got from the BFS
         d = path[len(path)-2] - path[len(path)-1]
-        print("direction:")
+        print("found path. direction:")
         print(d)
         
         if d.y > 0:
