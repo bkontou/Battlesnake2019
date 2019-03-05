@@ -7,27 +7,10 @@ import time
 from api import ping_response, start_response, move_response, end_response
 
 from Queue import Queue
+from copy import deepcopy as copy
 
 import numpy as np
-"""
-class Queue:
-    def __init__(self):
-        self.q = []
-    
-    def put(self, obj):
-        self.q.append(obj)
-    
-    def get(self):
-        obj = self.q[len(self.q)-1]
-        self.q.pop(len(self.q)-1)
-        return obj
-
-    def empty(self):
-        if len(self.q) == 0:
-            return True
-        else:
-            return False
-"""
+from collections import defaultdict
 
 class Loc:
     def __init__(self,x,y):
@@ -81,207 +64,203 @@ class Loc:
             return True
         else:
             return False
+        
+    def __repr__(self):
+        return str(self)
+        
+    def __hash__(self):
+        return hash((self.x,self.y))
+
+class Graph:
+    def __init__(self):
+        self.nodes = set()
+        self.edges = defaultdict(list)
+    
+    def add_node(self, node):
+        self.nodes.add(node)
+    
+    def add_edge(self, from_node, to_node):
+        self.edges[from_node].append(to_node)
+        self.edges[to_node].append(from_node)
+        
+    def remove_edge(self, from_node, to_node):
+        removed = copy(self)
+        try:
+            del removed.edges[from_node]
+            del removed.edges[to_node]
+        except:
+            print("edge does not exist")
+        return removed
+        
+    def remove_node(self, node):
+        removed = copy(self)
+        for E in self.edges[node]:
+            removed = removed.remove_edge(node,E)
+        try:
+            removed.nodes.remove(node)
+        except:
+            print("node does not exist")
+        
+        return removed
+    
+    def floodfind(self, From, L):
+        Q = Queue()
+        
+        if From not in self or L not in self:
+            return False
+    
+        Q.put(From)
+        to_visit = [From]
+        
+        while not Q.empty():
+            N = Q.get()
+            if N == L:
+                return True
+            
+            for E in G.edges[N]:
+                if E not in to_visit:
+                    to_visit.append(E)
+                    Q.put(E)
+                
+        return False
+        
+    
+    def __contains__(self,L):
+        return L in self.nodes
+            
+def build_graph(M):
+    G = Graph()
+    
+    for i, I in enumerate(M):
+        for j, J in enumerate(I):
+            if M[i,j] != 1:
+                G.add_node(Loc(i,j))
+            
+    for N in G.nodes:
+        i = N.x
+        j = N.y
+        try:
+            if M[i+1,j] != 1:
+                G.add_edge(Loc(i,j),Loc(i+1,j))
+        except:
+            pass
+        
+        try:
+            if M[i,j+1] != 1:
+                G.add_edge(Loc(i,j),Loc(i,j+1))
+        except:
+            pass
+            
+            
+    return G
+
+class Node(Loc):
+    def __init__(self,x,y,parent=None):
+        self.x = x
+        self.y = y
+        self.g = 0
+        self.h = 0
+        self.f = 0
+        self.parent = parent
+        
+
+def Astar(G,start,end):
+    
+    openList = []
+    closedList = []
+    
+    startNode = Node(start.x,start.y)
+    endNode = Node(end.x,end.y)
+    
+    openList.append(startNode)
+    
+    while len(openList) > 0:
+        current = openList[0]
+        c_index = 0
+        for index, item in enumerate(openList):
+            if item.f < current.f:
+                current = item
+                c_index = index
+        
+        openList.pop(c_index)
+        closedList.append(current)
+        
+        if current == end:
+            #get path
+            path = []
+            c = current
+            while c is not None:
+                path.append(Loc(c.x,c.y))
+                c = c.parent
+            return path[::-1]
+        
+        children = []
+        for node in G.edges[current]:
+            children.append(Node(node.x,node.y,parent=current))
+        
+        for child in children:
+            if child in closedList:
+                continue
+            
+            child.g = current.g + 1
+            child.h = (end - child).dist()
+            child.f = child.g + child.h
+            
+            if child in openList:
+                if child.g > openList[openList.index(child)].g:
+                    continue
+            
+            openList.append(child)
+                
+            
     
 
-class Tree:
-    def __init__(self, cargo, up=None, down=None, left=None, right=None, prev=None):
-        self.cargo = cargo
+class Block(Loc):
+    def __init__(self,x,y,up=None,down=None,left=None,right=None):
+        self.x = x
+        self.y = y
+        
         self.up = up
         self.down = down
-        self.left = left
         self.right = right
-        self.prev = prev
+        self.left = left
         
-        
-def search_tree(T_H):
-    Q = Queue()
-    Q.put(T_H)
-    path = []
-    path.append
+class Snake:
+    def ___init__(self, body, Head=None, Tail=None):
+        self.body = body
+        self.head = Block(body[0])
+        self.tail = Block(body[len(body-1)])
     
-    while not Q.empty():
-        T = Q.get()
-        
-        if T.up:
-            Q.put(T.up)
-        if T.down:
-            Q.put(T.down)
-        if T.left:
-            Q.put(T.left)
-        if T.right:
-            Q.put(T.right)
-            
-def BFS(T_H,l):
-    Q = Queue()
+    def __len__(self):
+        return len(body)
     
-    Q.put(T_H)
-    
-    while not Q.empty():
-        T = Q.get()
-        
-        if T.cargo == l:
-            #print("ladies and gentlemen... we got em")
-            return get_path(T)
-        
-        if T.up:
-            Q.put(T.up)
-        if T.down:
-            Q.put(T.down)
-        if T.left:
-            Q.put(T.left)
-        if T.right:
-            Q.put(T.right)
-    
-    return None
-
-def FloodFill(T_H,direction):
-    if direction == 'up' and T_H.up:
-        return Span(T_H.up)
-    else:
-        return 0
-        
-    if direction == 'down' and T_H.down:
-        return Span(T_H.down)
-    else:
-        return 0
-        
-    if direction == 'left' and T_H.left:
-        return Span(T_H.left)
-    else:
-        return 0
-        
-    if direction == 'ritght' and T_H.right:
-        return Span(T_H.right)
-    else:
-        return 0
+    def update_body(self,body):
+        self.body = body
+        self.head = Block(body[0])
+        self.tail = Block(body[len(body-1)])
         
 
-def Span(T_H):
+def floodfill(G, H):
     Q = Queue()
-    Q.put(T_H)
     
+    if H not in G:
+        return 0
+    
+    Q.put(H)
+    to_visit = [H]
     n = 0
     
-    
     while not Q.empty():
-        n += 1
-        T = Q.get()
-        
-        if T.up:
-            Q.put(T.up)
-        if T.down:
-            Q.put(T.down)
-        if T.left:
-            Q.put(T.left)
-        if T.right:
-            Q.put(T.right)
-    
-    return n
-
-def get_path(T):
-    path = []
-    
-    path.append(T.cargo)
-    N = T.prev
-    while N != None:
-        path.append(N.cargo)
-        N = N.prev
-    
-    return path
-
-        
-
-def build_tree(M,H_L):
-    loc_list = []
-            
-    T_H = Tree(H_L)
-    up = T_H.cargo.update_x(-1)
-    down = T_H.cargo.update_x(1)
-    left = T_H.cargo.update_y(-1)
-    right = T_H.cargo.update_y(1)
-    loc_list.append(T_H.cargo)
-    
-    Q = Queue()
-    
-    
-    try:
-        if M[up.x][up.y] != 1 and (up.x >= 0 and up.y >= 0):
-            T_H.up = Tree(up, prev=T_H)
-            Q.put(T_H.up)
-            loc_list.append(up)
-    except:
-        pass
-    try:
-        if M[down.x][down.y] != 1 and (down.x >= 0 and down.y >= 0):
-            T_H.down = Tree(down, prev=T_H)
-            Q.put(T_H.down)
-            loc_list.append(down)
-    except:
-        pass
-    try:
-        if M[left.x][left.y] != 1 and (left.x >= 0 and left.y >= 0):
-            T_H.left = Tree(left, prev=T_H)
-            Q.put(T_H.left)
-            loc_list.append(left)
-    except:
-        pass
-    try:
-        if M[right.x][right.y] != 1 and (right.x >= 0 and right.y >= 0):
-            T_H.right = Tree(right, prev=T_H)
-            Q.put(T_H.right)
-            loc_list.append(right)
-    except:
-        pass
-    
-    
-    
-    n = 0
-
-    while not Q.empty():
+        N = Q.get()
         n+=1
         
-        T = Q.get()
-        
-        up = T.cargo.update_x(-1)
-        down = T.cargo.update_x(1)
-        left = T.cargo.update_y(-1)
-        right = T.cargo.update_y(1)
-    
-        try:
-            if M[up.x][up.y] != 1 and (up.x >= 0 and up.y >= 0) and up not in loc_list:
-                T.up = Tree(up, prev=T)
-                Q.put(T.up)
-                loc_list.append(up)
-        except:
-            pass
+        for E in G.edges[N]:
+            if E not in to_visit:
+                to_visit.append(E)
+                Q.put(E)
             
-        try:
-            if M[down.x][down.y] != 1 and (down.x >= 0 and down.y >= 0) and down not in loc_list:
-                T.down = Tree(down, prev=T)
-                Q.put(T.down)
-                loc_list.append(down)
-        except:
-            pass
-            
-        try:
-            if M[left.x][left.y] != 1 and (left.x >= 0 and left.y >= 0) and left not in loc_list:
-                T.left = Tree(left, prev=T)
-                Q.put(T.left)
-                loc_list.append(left)
-        except:
-            pass
-            
-        try:
-            if M[right.x][right.y] != 1 and (right.x >= 0 and right.y >= 0) and right not in loc_list:
-                T.right = Tree(right, prev=T)
-                Q.put(T.right)
-                loc_list.append(right)
-        except:
-            pass
-        
-    return T_H
-            
-            
+    return n - 1
+             
     
 def to_loc_list(locs):
     loc_list = []
@@ -379,6 +358,7 @@ def move():
     global H
     global W
     global no_food
+    global G
     H, W = data["board"]["height"], data["board"]["height"]
     """
     TODO: Using the data from the endpoint request object, your
@@ -402,11 +382,8 @@ def move():
         fooddists.append(f-snake_head)
     fooddists = np.sort(fooddists)
     for i,f in enumerate(fooddists):
-        fooddists[i] = f + snake_head
-
-    
-    
-    
+        fooddists[i] = f + snake_head 
+    closest = fooddists[0]
     
     
     #compile all snakes into 1 list
@@ -416,6 +393,7 @@ def move():
     
     snakelist = to_loc_list(snakelist)
     snakelist.remove(my_snake_body[len(my_snake_body)-1])
+    snakelist.remove(my_snake_body[0])
 
     #print("updating map")
     #update map with snakes
@@ -427,177 +405,64 @@ def move():
         M[f.x,f.y] = 2
     
     #build tree over map. tree head is snake head
-    T_H = build_tree(M, snake_head)
-        
-    #idea: if snake gets to a cross road, break map into two and sum 1s in
-    #each side to see which side it should take: pro tip: take the lower sum side
-    if state == 'feed':
-        print("finding food")
-        path = None
-        
-        #Tree right, tree left
-        T_L = build_tree(M,snake_head+Loc(snake_head_direction.y,-snake_head_direction.x))
-        T_R = build_tree(M,snake_head+Loc(-snake_head_direction.y,snake_head_direction.x))
-        T_L_L = Span(T_L)
-        T_R_L = Span(T_R)
-        
-        if T_L_L < len(my_snake_body) and T_R_L < len(my_snake_body):
-            print("must chase tail")
-            state = 'chase'
-            
-        if T_L_L < len(my_snake_body):
-            #find food in T_R
-            to_find = 0
-            for f in fooddists:
-                path = BFS(T_R,f)
-                if path != None:
-                    to_find = f
-                    break
-            if to_find != 0:
-                path = BFS(T_H,to_find)
-            else:
-                state = 'chase'
-        elif T_R_L < len(my_snake_body):
-            #find food in T_R
-            to_find = 0
-            for f in fooddists:
-                path = BFS(T_L,f)
-                if path != None:
-                    to_find = f
-                    break
-            if to_find != 0:
-                path = BFS(T_H,to_find)
-            else:
-                state = 'chase'
-        else:
-            path = BFS(T_H,fooddists[0])
-# =============================================================================
-#         for i in range(3):
-#             f = fooddists[i]
-# 
-#             path = BFS(T_H,f)
-#             d = path[len(path)-2] - path[len(path)-1]
-#             
-#             if d == dirs[0]:
-#                 di = 'up'
-#             if d == dirs[1]:
-#                 di = 'right'
-#             if d == dirs[2]:
-#                 di = 'down'
-#             if d == dirs[3]:
-#                 di = 'left'
-#             
-#             l = FloodFill(T_H,di)
-#             if l < len(my_snake_body):
-#                 pass
-#             else:
-#                 break
-# =============================================================================
-            
-        
-# =============================================================================
-#         if snake_head.x > H - 2:
-#             
-# =============================================================================
-        
-        if path == None:
-            for i,f in enumerate(food):
-                path = BFS(T_H,f)
-                if path != None:
-                    break
-        if path == None:
-            for i in range(H):
-                for j in range(W):
-                    M[i][j] = 0
-            for s in snakelist:
-                M[s.x][s.y] = 1
-            
-            path = BFS(T_H,fooddists[0])
-            
-        if snake_head.x > H - 1 or snake_head.x < 1:
-            print("AT EDGE")
-        
-        if snake_head.y > W - 1 or snake_head.y  < 1:
-            print("AT EDGE")
-        
-        if path == None or len(my_snake_body) >= snakesizeinit+2:
-            state = 'chase'
-            if path == None:
-                no_food = 1
-            
+    G = build_graph(M)
     
-    elif state == 'chase':
-        print("chasing tail")
-        path = BFS(T_H, my_snake_body[len(my_snake_body)-1])
+    #check infront
+    print(snake_head_direction)
+    if snake_head + snake_head_direction not in G.nodes:
+        LHS = snake_head + Loc(snake_head_direction.y,-1*snake_head_direction.x)
+        RHS = snake_head + Loc(-1*snake_head_direction.y,snake_head_direction.x)
         
-        if data["you"]["health"] < 40 and no_food == 0:
-            snakesizeinit = len(my_snake_body)
-            state = 'feed'
-        elif path == None:
-            print("must find food")
-            to_find = 0
+        
+        RHS_n = floodfill(G.remove_node(snake_head),RHS)
+        LHS_n = floodfill(G.remove_node(snake_head),LHS)
+        
+        if RHS_n > LHS_n:
+            if RHS_n < len(my_snake_body):
+                print("AAA")
+                #chase tail
             for f in fooddists:
-                path = BFS(T_H,f)
-                if path != None:
-                    to_find = f
-                    break
-            if to_find != 0:
-                path = BFS(T_H,to_find)
-            else:
-                print("OH NO")
-                
+                if G.floodfind(RHS,f):
+                    closest = f
+                else:
+                    pass
+        elif LHS_n > RHS_n:
+            if LHS_n < len(my_snake_body):
+                print("AAA")
+                #chase tail
+            for f in fooddists:
+                if G.floodfind(RHS,f):
+                    closest = f
+                else:
+                    pass
+        elif RHS_n == LHS_n:
+            print("yeeT")
     
-
-    
+    path =  Astar(G,snake_head, closest)
     direction = 'down'
-    
-    if path == None:
-        #This shit is fucked!!! Need to rewrite!
-        print("cant find path!!!!")
-        d = my_snake_body[1] - my_snake_body[0]
-        
-        p_next = snake_head + d
-        
-        if p_next.x >= W-1 or p_next.x <= 0 or p_next.y >= H-1 or p_next.y <= 0:
-            n = 0
-            #print("gunna hit a wall")
-            if p_next in my_snake_body:
-                pass
-                #print("OH NO")
-            
-            
+
+    if path != None:
+        if len(path) < 2:
+            d = Loc(1,0)
         else:
-            n = 0
-            while p_next not in snakelist:
-                p_next = snake_head + dirs[n]
-                n+=1
-        
-        d = p_next - snake_head
-        
-        if d == dirs[0]:
-            direction = 'up'
-        if d == dirs[1]:
-            direction = 'right'
-        if d == dirs[2]:
-            direction = 'down'
-        if d == dirs[3]:
-            direction = 'left'
-                
-    else:
-        #Follow the first direction of the path you got from the BFS
-        d = path[len(path)-2] - path[len(path)-1]
-        print("found path. direction:")
-        print(d)
-        
+            d = path[1] - path[0]
+
+        print("finding")
         if d.y > 0:
             direction = 'down'
+            print('down')
         elif d.y < 0:
             direction = 'up'
+            print('u')
         elif d.x > 0:
             direction = 'right'
+            print('r')
         elif d.x < 0:
-            direction = 'left'
-
+            direction = 'left' 
+            print('l')
+    else:
+        print("cant find path")
+       
 
     return move_response(direction)
 
